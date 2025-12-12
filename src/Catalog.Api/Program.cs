@@ -5,16 +5,20 @@ builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssembly(typeof(Program).Assembly); 
+    config.AddBehavior(typeof(BuildingBlocks.Behaviors.LoggingBehavior<,>));
+    config.AddBehavior(typeof(BuildingBlocks.Behaviors.ValidationBehavior<,>));
 });
 
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
 builder.Services.AddMarten(opts =>
 {
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
 }).UseLightweightSessions();
+//builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 
 var app = builder.Build();
 
@@ -30,5 +34,7 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapCarter();
+app.UseExceptionHandler(options => { });
 
+app.UseExceptionHandler();
 app.Run();
