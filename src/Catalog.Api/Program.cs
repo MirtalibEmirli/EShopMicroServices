@@ -1,3 +1,7 @@
+using HealthChecks.UI.Client;
+using MediatR;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
@@ -5,8 +9,8 @@ builder.Services.AddCarter();
 builder.Services.AddMediatR(config =>
 {
     config.RegisterServicesFromAssembly(typeof(Program).Assembly); 
-    config.AddBehavior(typeof(BuildingBlocks.Behaviors.LoggingBehavior<,>));
-    config.AddBehavior(typeof(BuildingBlocks.Behaviors.ValidationBehavior<,>));
+    config.AddOpenBehavior(typeof(BuildingBlocks.Behaviors.LoggingBehavior< , >));
+    config.AddOpenBehavior(typeof(BuildingBlocks.Behaviors.ValidationBehavior<,>));
 });
 
 
@@ -19,7 +23,8 @@ builder.Services.AddMarten(opts =>
     opts.Connection(builder.Configuration.GetConnectionString("Database")!);
 }).UseLightweightSessions();
 //builder.Services.AddExceptionHandler<CustomExceptionHandler>();
-
+builder.Services.AddHealthChecks()
+    .AddNpgSql(builder.Configuration.GetConnectionString("Database")!);
 var app = builder.Build();
 
 // Swagger only in development
@@ -34,7 +39,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapCarter();
-app.UseExceptionHandler(options => { });
-
-app.UseExceptionHandler();
+//app.UseExceptionHandler(options => { });
+app.MapHealthChecks("/health",
+    new HealthCheckOptions
+    {
+        ResponseWriter =UIResponseWriter.WriteHealthCheckUIResponse
+    });
+//app.UseExceptionHandler();
 app.Run();

@@ -1,25 +1,33 @@
 ﻿using BuildingBlocks.CQRS;
 using MediatR;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Windows.Input;
 
 namespace BuildingBlocks.Behaviors;
-
-public class LoggingBehavior<TRequest, TResponse>(ILogger<LoggingBehavior<TRequest,TResponse>> logger) : IPipelineBehavior<TRequest, TResponse>
-    where TRequest :notnull, ICommand<TResponse>
-    where TResponse :notnull 
+public class LoggingBehavior<TRequest, TResponse>
+    (ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+    : IPipelineBehavior<TRequest, TResponse>
+    where TRequest : notnull 
+    where TResponse : notnull
 {
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        logger.LogInformation("Handling {RequestName} with payload: {@Request}", typeof(TRequest).Name, request);
-        var timer = System.Diagnostics.Stopwatch.StartNew();
-        var response = await  next();
+        logger.LogInformation("[START] Handle request={Request} - Response={Response} - RequestData={RequestData}",
+            typeof(TRequest).Name, typeof(TResponse).Name, request);
+   
+        var timer = new Stopwatch();
+        timer.Start();
+    
+        var response = await next();
+
         timer.Stop();
-        if(timer.ElapsedMilliseconds > 300)
-        {
-            logger.LogWarning("Long Running Request: {RequestName} took {ElapsedMilliseconds}ms",
-                typeof(TRequest).Name, timer.ElapsedMilliseconds);
-        }
-       return response;
+        var timeTaken = timer.Elapsed;
+        if (timeTaken.Seconds > 3) // if the request is greater than 3 seconds, then log the warnings
+            logger.LogWarning("[PERFORMANCE] The request {Request} took {TimeTaken} seconds.",
+                typeof(TRequest).Name, timeTaken.Seconds);
+
+        logger.LogInformation("[END] Handled {Request} with {Response}", typeof(TRequest).Name, typeof(TResponse).Name);
+        return response;
     }
 }

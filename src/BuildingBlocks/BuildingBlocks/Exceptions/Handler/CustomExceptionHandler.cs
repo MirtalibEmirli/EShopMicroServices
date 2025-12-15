@@ -1,14 +1,14 @@
 ﻿//using FluentValidation;
-//using Microsoft.AspNetCore.Diagnostics;
+//using MediatR.Pipeline;
 //using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
+ 
 //using Microsoft.Extensions.Logging;
 //using System.Net.Http;
 
 //namespace BuildingBlocks.Exceptions.Handler;
 //public class CustomExceptionHandler
 //    (ILogger<CustomExceptionHandler> logger)
-//    : IExceptionHandler
+//    : IRequestExceptionHandler<HttpContext, HttpResponseMessage, Exception>
 //{
 //    public async ValueTask<bool> TryHandleAsync(HttpContext context, Exception exception, CancellationToken cancellationToken)
 //    {
@@ -40,7 +40,7 @@
 //            (
 //                exception.Message,
 //                exception.GetType().Name,
-//                context.Response.StatusCode = StatusCodes.Status404NotFound
+//                context.Response.StatusCode = statuscode.Status404NotFound
 //            ),
 //            _ =>
 //            (

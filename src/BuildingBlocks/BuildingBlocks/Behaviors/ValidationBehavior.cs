@@ -17,7 +17,7 @@ public class ValidationBehavior<TRequest, TResponse>  : IPipelineBehavior<TReque
 
     public ValidationBehavior(IEnumerable<IValidator<TRequest>> validators)
     {
-        ValidatorOptions.LanguageManager.Culture = new CultureInfo("az");
+        ValidatorOptions.Global.LanguageManager.Culture = new CultureInfo("az");
         _validators = validators;
     }
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
