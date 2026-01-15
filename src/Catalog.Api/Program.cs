@@ -1,7 +1,7 @@
+﻿using Catalog.Api.Publisher;
 using HealthChecks.UI.Client;
-using MediatR;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
-
+using RabbitMQ.Client;
 var builder = WebApplication.CreateBuilder(args);
 
 // Services
@@ -25,6 +25,10 @@ builder.Services.AddMarten(opts =>
 //builder.Services.AddExceptionHandler<CustomExceptionHandler>();
 builder.Services.AddHealthChecks()
     .AddNpgSql(builder.Configuration.GetConnectionString("Database")!);
+  
+
+builder.Services.AddSingleton<EmailPublisher>();
+
 var app = builder.Build();
 
 // Swagger only in development
