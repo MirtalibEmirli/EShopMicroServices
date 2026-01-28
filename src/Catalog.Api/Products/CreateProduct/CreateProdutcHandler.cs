@@ -7,7 +7,7 @@ public record CreateProductCommand(string Name, List<string> Category, string De
     : ICommand<CreateProductResult>;
 public record CreateProductResult(Guid Id);
 
-public class CreateProdutcHandler(IDocumentSession documentSession,  EmailPublisher emailPublisher) : ICommandHandler<CreateProductCommand, CreateProductResult>
+public class CreateProdutcHandler(IDocumentSession documentSession, EmailPublisher emailPublisher) : ICommandHandler<CreateProductCommand, CreateProductResult>
 {
     public async Task<CreateProductResult> Handle(CreateProductCommand command, CancellationToken cancellationToken)
     {
@@ -22,9 +22,15 @@ public class CreateProdutcHandler(IDocumentSession documentSession,  EmailPublis
         };
         documentSession.Store(product);
         await documentSession.SaveChangesAsync(cancellationToken);
-       
-       await emailPublisher.Publish("mirtalibemirli217@gmail.com");
-        return new CreateProductResult( product.Id);
-            
-            }
+
+        await emailPublisher.Publish(new EmailNotificationEvent
+        {
+            ToEmail = "mirtalibemirli217@gmail.com",
+            ProductName = product.Name,
+            Subject = "New Product Created",
+
+        });
+        return new CreateProductResult(product.Id);
+
+    }
 }

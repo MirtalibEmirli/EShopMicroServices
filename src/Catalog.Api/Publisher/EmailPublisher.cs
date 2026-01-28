@@ -11,7 +11,7 @@ public class EmailPublisher
     }
 
 
-    public async Task Publish(string message)
+    public async Task Publish(EmailNotificationEvent message)
     {
         var factory = new ConnectionFactory()
         {
@@ -45,7 +45,8 @@ public class EmailPublisher
                                autoDelete: false,
                                arguments: null);
 
-        var body = System.Text.Encoding.UTF8.GetBytes(message);
+        var json = System.Text.Json.JsonSerializer.Serialize(message);
+        var body = System.Text.Encoding.UTF8.GetBytes(json);
         var props = new BasicProperties();
 
         await channel.BasicPublishAsync(
